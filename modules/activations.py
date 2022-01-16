@@ -60,7 +60,7 @@ class ReLU(ActivationBase):
         return np.clip(z, 0, np.inf)
 
     def grad(self, x):
-        return (x > 0).astrape(int)
+        return (x > 0).astype(int)
 
     def grad2(self, x):
         return np.zeros_like(x)

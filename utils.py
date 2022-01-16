@@ -36,18 +36,19 @@ def load_minst_data(data_folder):
         tmp = np.zeros(10)
         tmp[i] = 1
         y_train1.append(tmp)
-    y_test1 = [] 
+    y_test1 = []
     for i in y_test:
         tmp = np.zeros(10)
         tmp[i] = 1
         y_test1.append(tmp)
 
-
     return (x_train, np.array(y_train1)), (x_test, np.array(y_test1))
 
 
 def mse_loss(y_true, y_pred):
-    return np.sum(np.square(y_true-y_pred)) / y_true.shape[0]
+    return np.sum(np.square(y_true - y_pred)) / y_true.shape[0]
+
 
 def accuracy(y_true, y_pred):
-    return (np.sum(y_true.argmax(axis=1) == y_pred.argmax(axis=1)) / y_true.shape[0])
+    return (np.sum(y_true.argmax(axis=1) == y_pred.argmax(axis=1)) /
+            y_true.shape[0])

@@ -56,7 +56,7 @@ class MLP(object):
         layer_back = None
         cnt = 0
         for layer in self.layers[::-1]:
-            # print(str(layer)) 
+            # print(str(layer))
             if layer_back is None:
                 layer_back = layer.backward(dY_main)
             else:

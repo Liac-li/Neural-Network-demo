@@ -58,10 +58,11 @@ class CrossEntropy(LossBase):
 
 
 class LossInitializer(object):
+
     def __init__(self, param) -> None:
         self.param = param
         super().__init__()
-        
+
     def __call__(self):
         if self.param is None:
             raise ValueError("Loss can't be none")
@@ -71,9 +72,9 @@ class LossInitializer(object):
             res = self.get_instance(self.param)
         else:
             raise ValueError(f"Unknown loss function: {self.param}")
-            
+
         return res
-        
+
     def get_instance(self, loss_str):
         loss_str = loss_str.lower()
         if loss_str in 'MSE squarederror':
@@ -82,5 +83,5 @@ class LossInitializer(object):
             loss_fn = CrossEntropy()
         else:
             raise ValueError(f"Unknown loss function:{loss_str}")
-        
+
         return loss_fn
