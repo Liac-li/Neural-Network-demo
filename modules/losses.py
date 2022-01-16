@@ -17,7 +17,7 @@ class LossBase(ABC):
         pass
 
 
-class SquardedError(LossBase):
+class SquaredError(LossBase):
 
     def __init__(self):
         super().__init__()
@@ -31,7 +31,7 @@ class SquardedError(LossBase):
     def loss(self, y_true, y_pred):
         return 0.5 * np.linalg.norm(y_pred - y_true)**2
 
-    def grad(y_true, y_pred, z, act_fn):
+    def grad(self, y_true, y_pred, z, act_fn):
         return (y_pred - y_true) * act_fn(z)
 
 
@@ -55,3 +55,32 @@ class CrossEntropy(LossBase):
     def grad(self, y_true, y_pred, z, act_fn):
         grad = y_pred - y_true
         return grad
+
+
+class LossInitializer(object):
+    def __init__(self, param) -> None:
+        self.param = param
+        super().__init__()
+        
+    def __call__(self):
+        if self.param is None:
+            raise ValueError("Loss can't be none")
+        elif isinstance(self.param, LossBase):
+            res = self.param
+        elif isinstance(self.param, str):
+            res = self.get_instance(self.param)
+        else:
+            raise ValueError(f"Unknown loss function: {self.param}")
+            
+        return res
+        
+    def get_instance(self, loss_str):
+        loss_str = loss_str.lower()
+        if loss_str in 'MSE squarederror':
+            loss_fn = SquaredError()
+        elif loss_str in "crossentropy":
+            loss_fn = CrossEntropy()
+        else:
+            raise ValueError(f"Unknown loss function:{loss_str}")
+        
+        return loss_fn

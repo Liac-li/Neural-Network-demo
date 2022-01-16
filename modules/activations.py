@@ -83,6 +83,7 @@ class ActivationFunctions(object):
             res = self.get_instance(self.param)
         else:
             raise ValueError(f"Unknown paramater: {self.param}")
+        return res
 
     def get_instance(self, act_str) -> ActivationBase:
         act_str = act_str.lower()
