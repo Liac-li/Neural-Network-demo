@@ -1,5 +1,8 @@
 # NN layers class
+from abc import ABC, abstractmethod
 import numpy as np
+
+from activations import *
 
 
 class ActivationLayer(object):
@@ -96,7 +99,33 @@ class preActivationLayer(object):
 # TODO: nn.linear layer
 
 
-class Dense(object):
+class LayerBase(ABC):
+
+    def __init__(self, optimizer=None) -> None:
+        self.X = []
+        self.act_fn = None
+        self.trainable = True
+        # self.optimizer = OptimizerInitialier(optimizer)()
+
+        self.gradients = {}
+        self.params = {}
+        self.derived_variables = {}
+        super().__init__()
+
+    @abstractmethod
+    def _init_params(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def forward(self, X, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    def backward(self, out, **kwargs):
+        raise NotImplementedError
+
+
+class Dense(LayerBase):
     """
         full connection layer
         Y = f(WX + b)
@@ -111,3 +140,71 @@ class Dense(object):
 
         self.params = {"W": None, "b": None}
         self.is_initialized = False
+
+    def _init_params(self):
+        # init_w = WeightInitializer(str(self.act_fn)) # TODO
+
+        b = np.zeros((1, self.n_out))
+        W = np.zeros((self.n_in, self.n_out))
+
+        self.params = {"W": W, "b": b}
+        self.derived_variables = {"Z": []}
+        self.gradients = {"W": np.zeros_like(W), "b": np.zeros_like(b)}
+        self.is_initialized = True
+
+    def forward(self, X, retain_derived=True):
+        if not self.is_initialized:
+            self.n_in = X.shape[1]
+            self._init_params()
+
+        Y, Z = self._fwd(X)
+
+        if retain_derived:
+            self.X.append(X)
+            self.derived_variables["Z"].append(Z)
+
+        return Y
+
+    def _fwd(self, X):
+        W = self.params['W']
+        b = self.params['b']
+
+        Z = X @ W + b
+        Y = self.act_fn(Z)
+        return Y, Z
+
+    def backward(self, dLdy, retain_grads=True):
+        """
+            Parmaters:
+            dLdy:  <numpy.ndarray> as (n_ex, n_out)
+
+                \delta in NN, dLdy_{i-1} = dLdy @ W @ act_fn.grad
+        """
+
+        if not isinstance(dLdy, list):
+            dLdy = [dLdy]
+
+        dX = []
+        X = self.X
+        for dy, x in zip(dLdy, X):
+            dx, dw, db = self._bwd(dy, x)
+            dX.append(dx)
+
+            if retain_grads:
+                self.gradients["W"] += dw
+                self.gradients["b"] += db
+
+        return dX[0] if len(X) == 1 else dX
+
+    def _bwd(self, dLdy, X):
+        W = self.params['W']
+        b = self.params['b']
+
+        Z = X @ W + b
+        dZ = dLdy * self.act_fn.grad(Z)
+
+        dX = dZ @ W.T
+        dW = X.T @ dZ
+        dB = dZ.sum(axis=0, keepdims=True)
+
+        return dX, dW, dB
