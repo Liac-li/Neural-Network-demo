@@ -27,3 +27,10 @@ def load_minst_data(data_folder):
                                offset=16).reshape(len(y_test), 28, 28)
 
     return (x_train, y_train), (x_test, y_test)
+
+
+def mse_loss(y_true, y_pred):
+    return np.sum(np.square(y_true-y_pred)) / y_true.shape[0]
+
+def accuracy(y_true, y_pred):
+    return (np.sum(y_true == y_pred) / y_true.shape[0])
